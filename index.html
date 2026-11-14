@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ekantik by RINIYM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Ekantik is a ring for the quiet hour. Reserve the first edition.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }
+</script>
+<style>
+/* Layout: one pre-dawn hour. The sky lightens from indigo night to an
+   ember sunrise as the reader scrolls toward the order. Single dark world. */
+:root {
+  --night: #0a0913;
+  --ink: #f1e9dc;
+  --soft: #d2c8b8;
+  --mute: #958c9e;
+  --line: rgba(241, 233, 220, .13);
+  --panel: rgba(16, 13, 26, .72);
+  --saffron: #eaa64d;
+  --saffron-deep: #c4702c;
+  --on-saffron: #1d1208;
+  --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --deva: "Tiro Devanagari Hindi", "Noto Serif Devanagari", serif;
+  --slow: cubic-bezier(.22, .61, .36, 1);
+  --p: 0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--night); color: var(--ink);
+  font: 400 17px/1.65 var(--sans); -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection { background: var(--saffron); color: var(--on-saffron); }
+[hidden] { display: none !important; }
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+h1, h2, h3 { font-weight: 400; text-wrap: balance; margin: 0; }
+:focus-visible { outline: 1px solid var(--saffron); outline-offset: 4px; }
+
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { width: 100%; max-width: 1180px; margin: 0 auto; }
+.narrow { width: 100%; max-width: 720px; margin: 0 auto; }
+.label { font: 500 11px/1.4 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--mute); }
+em { font-style: italic; color: var(--saffron); }
+
+/* ---------- the sky ---------- */
+.sky { position: fixed; inset: 0; z-index: -2; overflow: hidden; background: linear-gradient(180deg, #06050c 0%, #0c0a19 55%, #151127 100%); }
+.sky .dawn {
+  position: absolute; inset: 0; opacity: var(--p);
+  background: linear-gradient(180deg, #120f22 0%, #2a1d33 50%, #5e3226 82%, #7a4228 100%);
+}
+.sky .sun {
+  position: absolute; left: 50%; bottom: 0; width: 140vmax; height: 140vmax; border-radius: 50%;
+  transform: translate(-50%, calc(108% - var(--p) * 26%));
+  background: radial-gradient(circle, rgba(234, 166, 77, .42), rgba(196, 112, 44, .14) 30%, transparent 55%);
+}
+#stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+/* ---------- nav ---------- */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #08070f; }
+.nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(10, 9, 19, .55); border-bottom: 1px solid var(--line);
+}
+.nav__in { display: flex; align-items: center; gap: 24px; height: 64px; }
+.brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
+.brand b { font: 400 24px/1 var(--serif); letter-spacing: .14em; }
+.brand span { font: 500 10px/1 var(--mono); letter-spacing: .2em; color: var(--mute); }
+.nav__links { display: flex; gap: 26px; margin-left: auto; font-size: 14px; color: var(--soft); }
+.nav__links a { text-decoration: none; transition: color .4s var(--slow); }
+.nav__links a:hover { color: var(--saffron); }
+.nav__end { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.nav__links + .nav__end { margin-left: 0; }
+.chip {
+  background: none; border: 1px solid var(--line); color: var(--mute); cursor: pointer;
+  font: 500 10px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase;
+  padding: 10px 12px; border-radius: 99px; transition: color .4s, border-color .4s;
+}
+.chip[aria-pressed="true"], .chip:hover { color: var(--saffron); border-color: var(--saffron-deep); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  border-radius: 99px; padding: 16px 28px; cursor: pointer; text-decoration: none;
+  font: 600 14px/1 var(--sans); letter-spacing: .02em; border: 1px solid transparent;
+  transition: background .5s var(--slow), color .5s var(--slow), border-color .5s var(--slow), transform .5s var(--slow);
+}
+.btn--solid { background: var(--saffron); color: var(--on-saffron); }
+.btn--solid:hover { background: #f4bb6c; transform: translateY(-1px); }
+.btn--ghost { border-color: var(--line); color: var(--ink); background: transparent; }
+.btn--ghost:hover { border-color: var(--saffron-deep); color: var(--saffron); }
+.btn--sm { padding: 11px 18px; font-size: 13px; }
+.btn small { font: 500 12px var(--mono); opacity: .75; }
+
+/* ---------- reveal: dim to full, never hidden ---------- */
+.js .r { opacity: .35; transform: translateY(14px); filter: blur(2px);
+  transition: opacity 1.6s var(--slow), transform 1.6s var(--slow), filter 1.6s var(--slow); }
+.js .r.in { opacity: 1; transform: none; filter: none; }
+
+section { padding-block: clamp(88px, 13vw, 168px); }
+
+/* ---------- hero ---------- */
+.hero { padding-block: clamp(40px, 6vw, 72px) clamp(56px, 8vw, 96px); }
+.hero__in { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(24px, 4vw, 56px); align-items: center; }
+.hero__copy { min-width: 0; display: grid; gap: 26px; }
+.hero h1 { font: 400 clamp(58px, 9.4vw, 132px)/.92 var(--serif); letter-spacing: -.02em; }
+.hero p.lede { font-size: clamp(17px, 1.5vw, 20px); color: var(--soft); max-width: 34ch; margin: 0; }
+.hero__cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero__note { font-size: 13px; color: var(--mute); margin: 0; }
+.stage { position: relative; aspect-ratio: 1; width: 100%; max-width: 100%; }
+.stage::before {
+  content: ""; position: absolute; inset: 8%; border-radius: 50%; z-index: -1;
+  background: radial-gradient(circle, rgba(234, 166, 77, .26), rgba(196, 112, 44, .08) 45%, transparent 70%);
+  animation: halo 8s var(--slow) infinite;
+}
+@keyframes halo { 0%, 100% { transform: scale(.92); opacity: .7; } 50% { transform: scale(1.04); opacity: 1; } }
+.stage canvas { display: block; outline-offset: -2px; }
+.stage__hint { position: absolute; bottom: 4%; left: 0; right: 0; margin: 0; text-align: center; pointer-events: none; }
+.stage__fallback { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; text-align: center; color: var(--mute); font-size: 14px; }
+.js-3d .stage__fallback { display: none; }
+
+.meaning { border-block: 1px solid var(--line); padding-block: 18px; text-align: center; }
+.meaning p { margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; align-items: baseline; }
+.meaning .deva { font: 400 22px/1 var(--deva); color: var(--ink); }
+
+/* ---------- stat ---------- */
+.stat { text-align: center; }
+.stat__num { font: 400 clamp(120px, 26vw, 300px)/.85 var(--serif); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stat__unit { font: italic 400 clamp(28px, 4vw, 44px)/1.1 var(--serif); color: var(--saffron); margin: 8px 0 32px; }
+.stat p { color: var(--soft); max-width: 46ch; margin: 0 auto; font-size: 19px; }
+sup a { color: var(--mute); text-decoration: none; font-size: 12px; }
+
+/* ---------- manifesto ---------- */
+.manifesto p { font: 400 clamp(32px, 4.8vw, 60px)/1.14 var(--serif); margin: 0 0 .8em; }
+.manifesto p.dim { color: var(--mute); }
+
+/* ---------- brahma muhurta ---------- */
+.hour { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
+.hour__deva { font: 400 clamp(64px, 10vw, 136px)/1.25 var(--deva); margin: 0; }
+.hour__copy { min-width: 0; display: grid; gap: 22px; }
+.hour h2 { font: 400 clamp(36px, 4.6vw, 58px)/1.05 var(--serif); }
+.hour p { margin: 0; color: var(--soft); max-width: 46ch; }
+.hour p.label { color: var(--mute); }
+.dial { display: flex; align-items: center; gap: 16px; }
+.dial svg { width: 56px; height: 56px; flex: none; }
+
+/* ---------- a day ---------- */
+.day h2, .practices h2, .craft h2, .faq h2 { font: 400 clamp(38px, 5vw, 64px)/1.04 var(--serif); }
+.day__head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 48px; }
+.day__head p { margin: 0; color: var(--mute); max-width: 36ch; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.card { position: relative; border-radius: 18px; overflow: hidden; min-height: 520px; display: flex; flex-direction: column; justify-content: end; isolation: isolate; }
+.card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 2.4s var(--slow); }
+.card:hover img { transform: scale(1.04); }
+.card::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10, 9, 19, .05) 20%, rgba(10, 9, 19, .9) 78%); }
+.card--dawn img { filter: saturate(.8) hue-rotate(-12deg) brightness(.85); }
+.card--night img { filter: saturate(.6) brightness(.45) hue-rotate(20deg); }
+.card__body { padding: 28px; display: grid; gap: 10px; }
+.card__body p { margin: 0; }
+.card h3 { font: 400 34px/1.05 var(--serif); }
+.card p:not(.label) { color: var(--soft); font-size: 16px; }
+
+/* ---------- practices ---------- */
+.practices__grid { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 56px; border-top: 1px solid var(--line); }
+.practice { padding: 32px 24px 8px 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.practice + .practice { padding-left: 24px; border-left: 1px solid var(--line); }
+.practice .deva { font: 400 44px/1.3 var(--deva); }
+.practice h3 { font: italic 400 26px/1 var(--serif); color: var(--saffron); }
+.practice p { margin: 0; color: var(--soft); font-size: 16px; }
+
+/* ---------- breath ---------- */
+.breath { text-align: center; }
+.breath h2 { font: 400 clamp(40px, 6vw, 72px)/1.04 var(--serif); margin-bottom: 16px; }
+.breath .sub { color: var(--mute); margin: 0 auto 48px; max-width: 40ch; }
+.orb-wrap { position: relative; width: min(340px, 78vw); aspect-ratio: 1; max-width: 100%; margin: 0 auto; display: grid; place-items: center; }
+.orb-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--line); }
+.orb {
+  width: 34%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, rgba(255, 228, 188, .95), rgba(234, 166, 77, .6) 45%, rgba(196, 112, 44, .06) 72%);
+  box-shadow: 0 0 90px 12px rgba(234, 166, 77, .2);
+  transition: transform 4s cubic-bezier(.45, .05, .35, 1);
+}
+.orb-word { position: absolute; font: italic 400 24px/1 var(--serif); color: var(--on-saffron); pointer-events: none; }
+#begin { margin-top: 44px; }
+#begin[disabled] { opacity: 0; pointer-events: none; }
+.after { min-height: 3em; margin: 28px auto 0; font: italic 400 clamp(22px, 3vw, 30px)/1.35 var(--serif); opacity: 0; transition: opacity 2s var(--slow); }
+.after.show { opacity: 1; }
+
+/* ---------- craft (scroll assembly) ---------- */
+.craft { padding-block: 0; height: 330vh; position: relative; }
+.craft__pin { position: sticky; top: 64px; height: calc(100vh - 64px); display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 32px; }
+.craft__copy { min-width: 0; display: grid; gap: 28px; }
+.craft__copy p.label { margin: 0; }
+.craft__tabs { list-style: none; margin: 0; padding: 0; display: flex; gap: 22px; font: 500 11px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--mute); counter-reset: s; }
+.craft__tabs li { counter-increment: s; transition: color .6s var(--slow); }
+.craft__tabs li::before { content: "0" counter(s) " "; opacity: .6; }
+.craft__tabs li.on { color: var(--saffron); }
+.craft__steps { position: relative; min-height: 8.6em; }
+.craft__steps p { position: absolute; inset: 0 auto auto 0; margin: 0; font: 400 clamp(24px, 2.6vw, 32px)/1.25 var(--serif); color: var(--soft); max-width: 22ch; opacity: 0; transform: translateY(10px); transition: opacity .9s var(--slow), transform .9s var(--slow); }
+.craft__steps p.on { opacity: 1; transform: none; }
+.craft__bar { height: 1px; background: var(--line); position: relative; max-width: 280px; }
+.craft__bar i { position: absolute; inset: 0 auto 0 0; width: calc(var(--a, 0) * 100%); background: var(--saffron); }
+.craft .stage { max-height: calc(100vh - 120px); margin-inline: auto; }
+
+/* ---------- india ---------- */
+.india__head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 48px; }
+.india__head h2 { font: 400 clamp(38px, 5vw, 64px)/1.04 var(--serif); }
+.india__head p { margin: 0; color: var(--mute); max-width: 36ch; }
+.facts { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+.fact { padding: 32px 24px 0 0; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.fact + .fact { padding-left: 24px; border-left: 1px solid var(--line); }
+.fact b { font: 400 clamp(52px, 6vw, 80px)/.95 var(--serif); font-weight: 400; color: var(--saffron); font-variant-numeric: tabular-nums; }
+.fact p { margin: 0; color: var(--soft); font-size: 16px; }
+.sources { grid-column: 1 / -1; margin: 0; padding-left: 18px; font-size: 12px; display: grid; gap: 4px; }
+
+/* ---------- order ---------- */
+.order__in { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(24px, 4vw, 56px); align-items: start; }
+.order__view { position: sticky; top: 88px; border-radius: 24px; border: 1px solid var(--line); background: radial-gradient(circle at 50% 40%, rgba(234, 166, 77, .14), transparent 60%), var(--panel); }
+.order__view .stage::before { display: none; }
+.order__view > .label { position: absolute; top: 20px; left: 22px; margin: 0; z-index: 1; }
+.buy { display: grid; gap: 28px; min-width: 0; }
+.buy > p { margin: 0; }
+.buy h2 { font: 400 clamp(48px, 6vw, 76px)/.95 var(--serif); }
+.price { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.price b { font: 400 40px/1 var(--serif); font-weight: 400; font-variant-numeric: tabular-nums; }
+.price span { color: var(--mute); font-size: 14px; }
+.buy p.intro { color: var(--soft); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 12px; }
+.finishes { display: flex; flex-wrap: wrap; gap: 10px; }
+.finish { position: relative; }
+.finish input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.finish label { display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 10px; border: 1px solid var(--line); border-radius: 99px; cursor: pointer; font-size: 14px; transition: border-color .4s; }
+.finish input:checked + label { border-color: var(--saffron); }
+.finish input:focus-visible + label { outline: 1px solid var(--saffron); outline-offset: 3px; }
+.swatch { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25), inset -4px -6px 8px rgba(0, 0, 0, .35); }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.field { display: grid; gap: 8px; min-width: 0; flex: 1 1 180px; }
+.field--fit { flex: 0 0 auto; }
+select, input[type=text], input[type=email], input[type=tel] {
+  width: 100%; background: rgba(255, 255, 255, .03); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 12px; padding: 14px; font: 400 15px var(--sans); outline: none; transition: border-color .4s;
+}
+select:focus, input:focus { border-color: var(--saffron); }
+select option { background: #15121f; }
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 12px; height: 50px; }
+.qty button { width: 44px; height: 100%; background: none; border: 0; color: var(--ink); font-size: 18px; cursor: pointer; }
+.qty output { min-width: 28px; text-align: center; font: 500 15px var(--mono); }
+.total { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); padding-top: 18px; }
+.total b { font: 400 30px var(--serif); font-variant-numeric: tabular-nums; }
+.buy .btn--solid { width: 100%; padding: 20px; font-size: 15px; }
+.promises { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 14px; color: var(--soft); }
+.promises li { display: flex; gap: 12px; }
+.promises li::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: 9px; border-radius: 50%; background: var(--saffron); }
+
+/* ---------- faq ---------- */
+.faq__list { margin-top: 40px; border-top: 1px solid var(--line); }
+details { border-bottom: 1px solid var(--line); }
+summary { list-style: none; cursor: pointer; padding: 24px 0; display: flex; justify-content: space-between; gap: 24px; font: 400 clamp(21px, 2.2vw, 26px)/1.3 var(--serif); }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font: 400 22px/1 var(--mono); color: var(--saffron); transition: transform .5s var(--slow); }
+details[open] summary::after { transform: rotate(45deg); }
+details p { margin: 0 0 24px; color: var(--soft); max-width: 62ch; }
+
+/* ---------- close ---------- */
+.closing { text-align: center; }
+.closing h2 { font: 400 clamp(48px, 8vw, 104px)/.98 var(--serif); margin-bottom: 36px; }
+footer { border-top: 1px solid var(--line); padding-block: 40px 48px; font-size: 13px; color: var(--mute); }
+.foot { display: grid; grid-template-columns: 1fr auto; gap: 20px 32px; align-items: center; }
+.foot nav { display: flex; gap: 22px; flex-wrap: wrap; }
+.foot nav a { text-decoration: none; }
+.foot nav a:hover { color: var(--saffron); }
+.foot .note { grid-column: 1 / -1; font-size: 12px; margin: 0; }
+
+/* ---------- checkout ---------- */
+dialog {
+  width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line);
+  border-radius: 22px; background: #110f1c; color: var(--ink); overflow: auto;
+}
+dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
+.co { padding: 28px; display: grid; gap: 20px; }
+.co__head { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+.co__head p { margin: 0 0 6px; }
+.co h3 { font: 400 34px/1.05 var(--serif); }
+.co__x { background: none; border: 0; color: var(--mute); font-size: 26px; line-height: 1; cursor: pointer; padding: 4px; }
+.co__sum { display: grid; gap: 6px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); font-size: 14px; }
+.co__sum div { display: flex; justify-content: space-between; gap: 12px; }
+.co__sum span:first-child { color: var(--mute); }
+.co__sum span:last-child { text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.co__sum .sum-total { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; font-weight: 600; }
+.co__note { font-size: 13px; color: var(--mute); margin: 0; padding-left: 12px; border-left: 2px solid var(--saffron-deep); }
+.co form { display: grid; gap: 14px; }
+.co label { font-size: 13px; color: var(--soft); }
+.err { color: #f0a08a; font-size: 13px; min-height: 1.2em; margin: 0; }
+.co__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.co__actions .btn { flex: 1 1 auto; }
+.done { text-align: center; display: grid; gap: 14px; justify-items: center; padding-block: 12px; }
+.done .seal { width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 228, 188, .9), rgba(234, 166, 77, .45) 55%, transparent 72%); }
+.done code { font: 500 15px var(--mono); letter-spacing: .12em; color: var(--saffron); }
+.done p { margin: 0; color: var(--soft); max-width: 36ch; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .nav__links { display: none; }
+  .hero__in, .hour, .order__in { grid-template-columns: 1fr; }
+  .hero__in .stage { max-width: 440px; margin: 0 auto; order: -1; }
+  .cards { grid-template-columns: 1fr; }
+  .card { min-height: 420px; }
+  .practices__grid { grid-template-columns: 1fr 1fr; }
+  .practice:nth-child(3) { padding-left: 0; border-left: 0; }
+  .practice { padding-bottom: 24px; }
+  .craft { height: 300vh; }
+  .craft__pin { grid-template-columns: 1fr; grid-template-rows: auto 1fr; align-content: start; padding-top: 24px; gap: 8px; }
+  .craft__steps { min-height: 6em; }
+  .craft .stage { max-height: 52vh; width: auto; height: 52vh; }
+  .order__view { position: relative; top: 0; }
+  .facts { grid-template-columns: 1fr 1fr; row-gap: 32px; }
+  .fact:nth-child(3) { padding-left: 0; border-left: 0; }
+}
+@media (max-width: 560px) {
+  .practices__grid { grid-template-columns: 1fr; }
+  .practice + .practice { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+  .facts { grid-template-columns: 1fr; row-gap: 0; }
+  .fact, .fact + .fact { padding: 24px 0; border-left: 0; }
+  .fact + .fact { border-top: 1px solid var(--line); }
+  .nav .chip { display: none; }
+  .foot { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .stage::before { animation: none; }
+  .js .r { transition: opacity .4s; transform: none; filter: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true"><div class="dawn"></div><div class="sun"></div></div>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<header class="nav gutter">
+  <div class="wrap nav__in">
+    <a class="brand" href="#top"><b>EKANTIK</b><span>BY RINIYM</span></a>
+    <nav class="nav__links" aria-label="Sections">
+      <a href="#hour">The hour</a>
+      <a href="#practices">Practices</a>
+      <a href="#breathe">Breathe</a>
+      <a href="#craft">Craft</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <div class="nav__end">
+      <button class="chip" id="sound" type="button" aria-pressed="false">Sound off</button>
+      <a class="btn btn--solid btn--sm" href="#order">Reserve</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero gutter">
+  <div class="wrap hero__in">
+    <div class="hero__copy">
+      <p class="label">First edition &middot; made in small numbers</p>
+      <h1>Come back<br>to the <em>one.</em></h1>
+      <p class="lede">A ring that keeps your practice and asks nothing of you. Count your japa, hold a sit, follow your breath. The world can wait a few minutes.</p>
+      <div class="hero__cta">
+        <a class="btn btn--solid" href="#order">Reserve yours <small data-price>&#8377;4,999</small></a>
+        <a class="btn btn--ghost" href="#breathe">Take one breath</a>
+      </div>
+      <p class="hero__note">Pay nothing today. No app, no account.</p>
+    </div>
+    <div class="stage" id="heroRing">
+      <p class="stage__fallback">The Ekantik ring</p>
+      <p class="stage__hint label">Drag to turn</p>
+    </div>
+  </div>
+</section>
+
+<div class="meaning gutter">
+  <p class="wrap"><span class="deva" lang="hi">एकांतिक</span><span class="label">ekāntika</span><span class="label">devoted to the one &middot; turned inward &middot; single-pointed</span></p>
+</div>
+
+<section class="stat gutter">
+  <div class="narrow">
+    <div class="stat__num r" id="statNum">186</div>
+    <p class="stat__unit r">times a day.</p>
+    <p class="r">That is how often the average American checks their phone.<sup><a href="#source-1" aria-label="Source">1</a></sup> Each check is a small leaving. Ekantik is something to reach for that brings you back instead.</p>
+  </div>
+</section>
+
+<section class="manifesto gutter">
+  <div class="narrow">
+    <p class="r dim">Everything you carry was built to call you away.</p>
+    <p class="r dim">It counts your steps, your sleep, your heartbeat.</p>
+    <p class="r">It has never once asked you to be still.</p>
+    <p class="r">Ekantik counts <em>the moments you return.</em></p>
+  </div>
+</section>
+
+<section class="gutter" id="hour">
+  <div class="wrap hour">
+    <p class="hour__deva r" lang="hi">ब्रह्म<br>मुहूर्त</p>
+    <div class="hour__copy">
+      <p class="label r">Brahma muhurta</p>
+      <h2 class="r">The hour before sunrise, carried into any hour.</h2>
+      <p class="r">Many traditions keep the ninety-six minutes before dawn for practice. The air is still, the house is asleep, and the day has not started asking for anything yet.</p>
+      <p class="r">Ekantik is made to carry that hour with you, into a crowded train, a long afternoon, the minute before a hard conversation.</p>
+      <div class="dial r">
+        <svg viewBox="0 0 56 56" aria-hidden="true">
+          <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(241,233,220,.15)" stroke-width="1.5"/>
+          <path d="M28 4 A24 24 0 0 1 51.3 22.3" fill="none" stroke="#eaa64d" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="28" cy="28" r="3" fill="#eaa64d"/>
+        </svg>
+        <span class="label">04:24 to 06:00 &middot; two muhurtas of 48 minutes</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="day gutter">
+  <div class="wrap">
+    <div class="day__head">
+      <h2 class="r">A day, held lightly.</h2>
+      <p class="r">Three moments from a day with Ekantik. None of them need a screen bigger than a grain of rice.</p>
+    </div>
+    <div class="cards">
+      <article class="card card--dawn r">
+        <img src="assets/01-glacier.jpg" alt="Snow-covered mountains in the first light" loading="lazy">
+        <div class="card__body">
+          <p class="label">Dawn</p>
+          <h3>The first breath</h3>
+          <p>The house is still asleep. You turn the ring once, and for a few minutes the day has not started asking anything of you.</p>
+        </div>
+      </article>
+      <article class="card r">
+        <img src="assets/05-plains.jpg" alt="A river winding through golden grassland under a wide sky" loading="lazy">
+        <div class="card__body">
+          <p class="label">Midday</p>
+          <h3>The pause between</h3>
+          <p>Between two meetings, eleven slow breaths with your thumb on the ring. Nobody notices. You do.</p>
+        </div>
+      </article>
+      <article class="card card--night r">
+        <img src="assets/08-sea.jpg" alt="The sea at dusk" loading="lazy">
+        <div class="card__body">
+          <p class="label">Night</p>
+          <h3>Nothing else</h3>
+          <p>No messages arrive here. No streaks to protect. When you are done it goes completely dark, and so can you.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="practices gutter" id="practices">
+  <div class="wrap">
+    <h2 class="r">Four practices.<br>One touch.</h2>
+    <div class="practices__grid">
+      <div class="practice r">
+        <span class="deva" lang="hi">जप</span>
+        <h3>Japa</h3>
+        <p>One touch, one bead. The ring holds the count to 108, so your mind can let go of it.</p>
+      </div>
+      <div class="practice r">
+        <span class="deva" lang="hi">ध्यान</span>
+        <h3>Dhyan</h3>
+        <p>Set a sit and close your eyes. One soft pulse tells you when it is time to come back.</p>
+      </div>
+      <div class="practice r">
+        <span class="deva" lang="hi">प्राणायाम</span>
+        <h3>Pranayam</h3>
+        <p>A light that widens and narrows. Follow it until your breath follows you.</p>
+      </div>
+      <div class="practice r">
+        <span class="deva" lang="hi">स्मरण</span>
+        <h3>Smaran</h3>
+        <p>A quiet record of every round and every sit, kept on the ring and nowhere else.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="breath gutter" id="breathe">
+  <div class="narrow">
+    <h2 class="r">Take one breath with us.</h2>
+    <p class="sub r">Thirty-six seconds. In for four, hold for two, out for six. Turn the sound on if you like.</p>
+    <div class="orb-wrap">
+      <div class="orb-ring"></div>
+      <div class="orb" id="orb"></div>
+      <span class="orb-word" id="orbWord" aria-live="polite"></span>
+    </div>
+    <button class="btn btn--ghost" id="begin" type="button">Begin</button>
+    <p class="after" id="after">For a moment, you were here.<br>Ekantik keeps that door open.</p>
+  </div>
+</section>
+
+<section class="craft gutter" id="craft">
+  <div class="wrap craft__pin">
+    <div class="craft__copy">
+      <p class="label">Craft &middot; Made in India</p>
+      <h2>Made by India,<br>for India.</h2>
+      <ol class="craft__tabs" aria-hidden="true">
+        <li class="on">Drawn</li><li>Shaped</li><li>Made</li>
+      </ol>
+      <div class="craft__steps" aria-live="polite">
+        <p class="on">Drawn here first. Every curve was sketched by an Indian team, around Indian hands and the way a mala is held.</p>
+        <p>Shaped here, prototype after prototype, and tested on fingers that already know the count of 108.</p>
+        <p>Made here by Indian makers, piece by piece, for the people who will wear it every morning.</p>
+      </div>
+      <div class="craft__bar" id="craftBar"><i></i></div>
+    </div>
+    <div class="stage" id="craftRing">
+      <p class="stage__fallback">The ring, from drawing to finished piece</p>
+    </div>
+  </div>
+</section>
+
+<section class="india gutter" aria-labelledby="indiaTitle">
+  <div class="wrap">
+    <div class="india__head">
+      <h2 class="r" id="indiaTitle">Why it matters here.</h2>
+      <p class="r">India gave the world the quiet hour. Today most of us start the day somewhere else.</p>
+    </div>
+    <div class="facts">
+      <div class="fact r"><b>84%</b><p>of Indian smartphone users check their phone within fifteen minutes of waking up.<sup><a href="#source-2" aria-label="Source 2">2</a></sup></p></div>
+      <div class="fact r"><b>5 hrs</b><p>a day is how long the average Indian spends on a smartphone.<sup><a href="#source-3" aria-label="Source 3">3</a></sup></p></div>
+      <div class="fact r"><b>1 in 10</b><p>Indian adults lives with a mental health condition, and most never receive care.<sup><a href="#source-4" aria-label="Source 4">4</a></sup></p></div>
+      <div class="fact r"><b>6&times;</b><p>is how much India&rsquo;s electronics production grew in a decade. Ekantik is part of what it makes next.<sup><a href="#source-5" aria-label="Source 5">5</a></sup></p></div>
+    </div>
+  </div>
+</section>
+
+<section class="order gutter" id="order">
+  <div class="wrap order__in">
+    <div class="order__view">
+      <p class="label" id="viewLabel">Sandal</p>
+      <div class="stage" id="configRing">
+        <p class="stage__fallback">Your Ekantik</p>
+        <p class="stage__hint label">Drag to turn</p>
+      </div>
+    </div>
+
+    <form class="buy" id="buy" novalidate>
+      <p class="label">First edition</p>
+      <h2>Ekantik</h2>
+      <div class="price"><b data-price>&#8377;4,999</b><span>Pay nothing today</span></div>
+      <p class="intro">The ring, ready for japa, dhyan, pranayam and smaran from the first touch. Charges over USB-C. Needs no phone.</p>
+
+      <fieldset>
+        <legend class="label">Finish</legend>
+        <div class="finishes">
+          <div class="finish"><input type="radio" name="finish" id="f-sandal" value="sandal" checked><label for="f-sandal"><span class="swatch" style="background:#c49a68"></span>Sandal</label></div>
+          <div class="finish"><input type="radio" name="finish" id="f-ash" value="ash"><label for="f-ash"><span class="swatch" style="background:#b3b6bb"></span>Ash</label></div>
+          <div class="finish"><input type="radio" name="finish" id="f-midnight" value="midnight"><label for="f-midnight"><span class="swatch" style="background:#2b2d33"></span>Midnight</label></div>
+        </div>
+      </fieldset>
+
+      <div class="row">
+        <div class="field">
+          <label class="label" for="size">Ring size</label>
+          <select id="size" name="size">
+            <option value="help">Help me choose</option>
+            <option value="US 5">US 5 &middot; 15.7 mm</option>
+            <option value="US 6">US 6 &middot; 16.5 mm</option>
+            <option value="US 7">US 7 &middot; 17.3 mm</option>
+            <option value="US 8" selected>US 8 &middot; 18.1 mm</option>
+            <option value="US 9">US 9 &middot; 18.9 mm</option>
+            <option value="US 10">US 10 &middot; 19.8 mm</option>
+            <option value="US 11">US 11 &middot; 20.6 mm</option>
+            <option value="US 12">US 12 &middot; 21.4 mm</option>
+            <option value="US 13">US 13 &middot; 22.2 mm</option>
+          </select>
+        </div>
+        <div class="field field--fit">
+          <span class="label" id="qtyLabel">Quantity</span>
+          <div class="qty" role="group" aria-labelledby="qtyLabel">
+            <button type="button" id="qMinus" aria-label="One fewer">&minus;</button>
+            <output id="qty" aria-live="polite">1</output>
+            <button type="button" id="qPlus" aria-label="One more">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="total"><span class="label">Total</span><b id="total">&#8377;4,999</b></div>
+      <button class="btn btn--solid" type="submit">Reserve yours</button>
+      <ul class="promises">
+        <li>Pay nothing today. We write to you before anything is charged.</li>
+        <li>Change your finish or size any time before it ships.</li>
+        <li>No app, no account, no subscription.</li>
+      </ul>
+    </form>
+  </div>
+</section>
+
+<section class="faq gutter" id="faq">
+  <div class="narrow">
+    <h2 class="r">Questions</h2>
+    <div class="faq__list">
+      <details><summary>Do I need my phone or an app?</summary><p>No. Ekantik has no Bluetooth, no Wi-Fi and no app. Everything happens on the ring, and nothing leaves it.</p></details>
+      <details><summary>I have never meditated. Is it for me?</summary><p>Yes. Start with one breath practice a day. Each practice is one screen deep, so there is nothing to learn before you begin.</p></details>
+      <details><summary>How do I charge it?</summary><p>Over USB-C. Battery life will be confirmed on the production ring before you pay anything.</p></details>
+      <details><summary>How do I find my size?</summary><p>Choose a size from the list if you know it, or choose Help me choose. We will guide you before anything ships.</p></details>
+      <details><summary>When does it ship?</summary><p>The first edition is being made in small numbers. We will write with a date before you are charged.</p></details>
+      <details><summary>Is Ekantik a medical device?</summary><p>No. It is a companion for your practice and is not intended to diagnose or treat any condition.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="closing gutter">
+  <div class="narrow">
+    <h2 class="r">The quiet hour<br>is <em>waiting.</em></h2>
+    <a class="btn btn--solid r" href="#order">Reserve yours <small data-price>&#8377;4,999</small></a>
+  </div>
+</section>
+
+</main>
+
+<footer class="gutter">
+  <div class="wrap foot">
+    <a class="brand" href="#top"><b>EKANTIK</b><span>BY RINIYM</span></a>
+    <nav aria-label="Footer">
+      <a href="#hour">The hour</a><a href="#practices">Practices</a><a href="#order">Reserve</a><a href="#faq">Questions</a>
+    </nav>
+    <ol class="sources">
+      <li id="source-1">Reviews.org cell phone usage survey of U.S. adults, 2026.</li>
+      <li id="source-2">Boston Consulting Group study of Indian smartphone users, as reported by BOOM.</li>
+      <li id="source-3">EY report on India&rsquo;s media and entertainment sector, 2025, as reported by Bloomberg.</li>
+      <li id="source-4">National Mental Health Survey of India 2015&ndash;16, NIMHANS: 10.6% of adults; treatment gap of 70&ndash;92% by condition.</li>
+      <li id="source-5">Ministry of Electronics and IT: &#8377;1.9 lakh crore in 2014&ndash;15 to &#8377;11.3 lakh crore in 2024&ndash;25, as reported by The Tribune.</li>
+    </ol>
+    <p class="note">RINIYM &copy; 2026</p>
+  </div>
+</footer>
+
+<dialog id="checkout" aria-labelledby="coTitle">
+  <div class="co">
+    <div class="co__head">
+      <div><p class="label" id="coStep">Step 1 of 2</p><h3 id="coTitle">Where should we write?</h3></div>
+      <button class="co__x" type="button" id="coClose" aria-label="Close">&times;</button>
+    </div>
+
+    <div id="coSummary" class="co__sum"></div>
+
+    <form id="coForm" novalidate>
+      <div class="field"><label for="coName">Your name</label><input type="text" id="coName" autocomplete="name" required></div>
+      <div class="field"><label for="coEmail">Email</label><input type="email" id="coEmail" autocomplete="email" required></div>
+      <div class="row">
+        <div class="field"><label for="coPhone">Phone (optional)</label><input type="tel" id="coPhone" autocomplete="tel"></div>
+        <div class="field"><label for="coCity">City</label><input type="text" id="coCity" autocomplete="address-level2" required></div>
+      </div>
+      <p class="err" id="coErr" role="alert"></p>
+      <p class="co__note">Preview store. Orders open soon, so nothing you enter here is sent anywhere yet.</p>
+      <div class="co__actions"><button class="btn btn--solid" type="submit">Review reservation</button></div>
+    </form>
+
+    <div id="coReview" hidden>
+      <div class="co__sum" id="coWho"></div>
+      <div class="co__actions" style="margin-top:20px">
+        <button class="btn btn--ghost" type="button" id="coBack">Edit</button>
+        <button class="btn btn--solid" type="button" id="coConfirm">Confirm reservation</button>
+      </div>
+    </div>
+
+    <div id="coDone" class="done" hidden>
+      <div class="seal" aria-hidden="true"></div>
+      <h3 id="coThanks">Thank you.</h3>
+      <code id="coRef">EK-000000</code>
+      <p id="coNext">We will write before anything is charged.</p>
+      <p class="co__note" style="text-align:left">Preview store: this reservation was not sent anywhere.</p>
+      <button class="btn btn--ghost" type="button" id="coDoneClose">Back to the quiet</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  document.documentElement.classList.add('js');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const PRICE = 4999;   /* rupees; change here and every price on the page follows */
+  const rupees = (n) => '₹' + n.toLocaleString('en-IN');
+  document.querySelectorAll('[data-price]').forEach((el) => { el.textContent = rupees(PRICE); });
+
+  /* ---- reveals: dim to full as each line arrives ---- */
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: 0.2, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('.r').forEach((el) => io.observe(el));
+
+  /* ---- the count-up, only once it is seen ---- */
+  const num = document.getElementById('statNum');
+  new IntersectionObserver((es, ob) => {
+    if (!es[0].isIntersecting || reduced) return;
+    ob.disconnect();
+    const t0 = performance.now();
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / 1800);
+      num.textContent = Math.round(186 * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, { threshold: 0.5 }).observe(num);
+
+  /* ---- the sky: scrolling is the hour before dawn ---- */
+  const root = document.documentElement;
+  const craft = document.getElementById('craft');
+  const steps = craft.querySelectorAll('.craft__steps p');
+  const tabs = craft.querySelectorAll('.craft__tabs li');
+  const LOOKS = ['wire', 'clay', 'real'];
+  const bar = document.getElementById('craftBar');
+  let craftStage = null, ticking = false, skyP = 0;
+  function onScroll() {
+    ticking = false;
+    const max = root.scrollHeight - innerHeight;
+    const p = max > 0 ? Math.min(1, scrollY / max) : 0;
+    skyP = p * p;
+    root.style.setProperty('--p', skyP.toFixed(3));
+
+    const r = craft.getBoundingClientRect();
+    const a = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
+    bar.style.setProperty('--a', a.toFixed(3));
+    const idx = a < 0.38 ? 0 : a < 0.72 ? 1 : 2;
+    steps.forEach((s, i) => s.classList.toggle('on', i === idx));
+    tabs.forEach((s, i) => s.classList.toggle('on', i === idx));
+    if (craftStage) { craftStage.setProgress(a); craftStage.setLook(LOOKS[idx]); }
+  }
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  addEventListener('resize', onScroll);
+  onScroll();
+
+  /* ---- stars, fading as the sky lightens ---- */
+  const cv = document.getElementById('stars'), cx = cv.getContext('2d');
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const S = [];
+  const sizeStars = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; };
+  sizeStars(); addEventListener('resize', sizeStars);
+  for (let i = 0; i < 110; i++) S.push({ x: Math.random(), y: Math.random() * .8, r: (.3 + Math.random() * 1.1) * dpr, a: .15 + Math.random() * .6, ph: Math.random() * 6.3 });
+  function drawStars(t) {
+    const fade = 1 - skyP;
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.fillStyle = '#f6eedf';
+    for (const s of S) {
+      cx.globalAlpha = s.a * fade * (reduced ? 1 : .65 + .35 * Math.sin(t / 1400 + s.ph));
+      cx.beginPath(); cx.arc(s.x * cv.width, s.y * cv.height, s.r, 0, 6.283); cx.fill();
+    }
+    if (!reduced) requestAnimationFrame(drawStars);
+  }
+  requestAnimationFrame(drawStars);
+  if (reduced) addEventListener('scroll', () => requestAnimationFrame(drawStars), { passive: true });
+
+  /* ---- sound: an opt-in drone, and a singing bowl on each breath ---- */
+  let ac = null, master = null;
+  const soundBtn = document.getElementById('sound');
+  const soundOn = () => soundBtn.getAttribute('aria-pressed') === 'true';
+  function bowl(freq) {
+    if (!ac || !soundOn()) return;
+    const t = ac.currentTime;
+    [1, 2.76, 5.4].forEach((m, i) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.value = freq * m;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.16 / (i + 1), t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 7 - i * 1.5);
+      o.connect(g).connect(master); o.start(t); o.stop(t + 7.2);
+    });
+  }
+  soundBtn.addEventListener('click', () => {
+    const on = !soundOn();
+    if (!ac) {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      master = ac.createGain(); master.gain.value = 0; master.connect(ac.destination);
+      /* a low drone at 136.1 Hz, the pitch often tuned to Om, with its fifth */
+      [136.1, 204.15].forEach((f, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.frequency.value = f; g.gain.value = i ? 0.035 : 0.07;
+        const lfo = ac.createOscillator(), lg = ac.createGain();
+        lfo.frequency.value = 0.125; lg.gain.value = 0.025;
+        lfo.connect(lg).connect(g.gain);
+        o.connect(g).connect(master); o.start(); lfo.start();
+      });
+    }
+    ac.resume();
+    master.gain.cancelScheduledValues(ac.currentTime);
+    master.gain.setTargetAtTime(on ? 0.9 : 0, ac.currentTime, 1.2);
+    soundBtn.setAttribute('aria-pressed', String(on));
+    soundBtn.textContent = on ? 'Sound on' : 'Sound off';
+    if (on) bowl(432);
+  });
+
+  /* ---- one guided breath: in 4, hold 2, out 6, three times ---- */
+  const orb = document.getElementById('orb'), word = document.getElementById('orbWord');
+  const begin = document.getElementById('begin'), after = document.getElementById('after');
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  begin.addEventListener('click', async () => {
+    begin.disabled = true; after.classList.remove('show');
+    for (let i = 0; i < 3; i++) {
+      bowl(i === 2 ? 384 : 432);
+      word.textContent = 'breathe in';
+      orb.style.transitionDuration = '4s'; orb.style.transform = 'scale(2.6)';
+      await wait(4000);
+      word.textContent = 'hold';
+      await wait(2000);
+      word.textContent = 'let go';
+      orb.style.transitionDuration = '6s'; orb.style.transform = 'scale(1)';
+      await wait(6000);
+    }
+    word.textContent = '';
+    after.classList.add('show');
+    await wait(2500);
+    begin.textContent = 'Again'; begin.disabled = false;
+  });
+
+  /* ---- the order ---- */
+  const NAMES = { midnight: 'Midnight', ash: 'Ash', sandal: 'Sandal' };
+  const buy = document.getElementById('buy');
+  const qtyOut = document.getElementById('qty');
+  let qty = 1, configStage = null;
+  const order = () => ({
+    finish: buy.finish.value,
+    size: buy.size.value === 'help' ? 'Help me choose' : buy.size.value,
+    qty, total: PRICE * qty
+  });
+  function refresh() {
+    qtyOut.textContent = qty;
+    document.getElementById('total').textContent = rupees(PRICE * qty);
+    document.getElementById('viewLabel').textContent = NAMES[buy.finish.value];
+    if (configStage) configStage.setFinish(buy.finish.value);
+  }
+  document.getElementById('qMinus').addEventListener('click', () => { qty = Math.max(1, qty - 1); refresh(); });
+  document.getElementById('qPlus').addEventListener('click', () => { qty = Math.min(5, qty + 1); refresh(); });
+  buy.addEventListener('change', refresh);
+
+  const dlg = document.getElementById('checkout');
+  const coForm = document.getElementById('coForm'), coReview = document.getElementById('coReview'), coDone = document.getElementById('coDone');
+  const coSummary = document.getElementById('coSummary'), coErr = document.getElementById('coErr');
+  const show = (step) => {
+    coForm.hidden = step !== 1; coReview.hidden = step !== 2; coDone.hidden = step !== 3;
+    coSummary.hidden = step === 3;
+    document.getElementById('coStep').textContent = step === 3 ? 'Reserved' : 'Step ' + step + ' of 2';
+    document.getElementById('coTitle').textContent = step === 1 ? 'Where should we write?' : step === 2 ? 'Check your reservation' : 'The quiet hour is yours';
+  };
+  const row = (k, v) => {
+    const d = document.createElement('div'), a = document.createElement('span'), b = document.createElement('span');
+    a.textContent = k; b.textContent = v; d.append(a, b); return d;
+  };
+  function fillSummary() {
+    const o = order();
+    const due = row('Due today', rupees(0)); due.className = 'sum-total';
+    coSummary.replaceChildren(
+      row('Ekantik, first edition', NAMES[o.finish]),
+      row('Size', o.size),
+      row('Quantity', String(o.qty)),
+      due,
+      row('Due when it ships', rupees(o.total))
+    );
+  }
+  buy.addEventListener('submit', (e) => {
+    e.preventDefault();
+    fillSummary(); show(1); coErr.textContent = '';
+    dlg.showModal();
+    document.getElementById('coName').focus();
+  });
+  const close = () => dlg.close();
+  document.getElementById('coClose').addEventListener('click', close);
+  document.getElementById('coDoneClose').addEventListener('click', close);
+  document.getElementById('coBack').addEventListener('click', () => show(1));
+  const val = (id) => document.getElementById(id).value.trim();
+  coForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = val('coName'), email = val('coEmail'), city = val('coCity'), phone = val('coPhone');
+    if (!name) { coErr.textContent = 'Add your name so we know who to write to.'; document.getElementById('coName').focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { coErr.textContent = 'Enter a full email address, like name@example.com.'; document.getElementById('coEmail').focus(); return; }
+    if (!city) { coErr.textContent = 'Add your city so we can plan delivery.'; document.getElementById('coCity').focus(); return; }
+    coErr.textContent = '';
+    document.getElementById('coWho').replaceChildren(row('Name', name), row('Email', email), row('City', city), ...(phone ? [row('Phone', phone)] : []));
+    show(2);
+  });
+  document.getElementById('coConfirm').addEventListener('click', () => {
+    document.getElementById('coThanks').textContent = 'Thank you, ' + val('coName').split(/\s+/)[0] + '.';
+    document.getElementById('coRef').textContent = 'EK-' + String(Math.floor(100000 + Math.random() * 900000));
+    document.getElementById('coNext').textContent = 'We will write to ' + val('coEmail') + ' before anything is charged.';
+    show(3);
+  });
+
+  /* ---- the 3D ring, three times ---- */
+  const gl = (() => { try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; } })();
+  if (gl) {
+    import('./js/stage.js').then(({ mountRing }) => {
+      root.classList.add('js-3d');
+      mountRing(document.getElementById('heroRing'), { mode: 'hero', finish: 'sandal' });
+      craftStage = mountRing(document.getElementById('craftRing'), { mode: 'design', finish: 'sandal', label: 'The ring shown as it is designed: first a drawn mesh, then a clay prototype, then the finished piece.' });
+      configStage = mountRing(document.getElementById('configRing'), { mode: 'config', finish: buy.finish.value });
+      onScroll(); refresh();
+    }).catch((err) => console.error(err));
+  }
+})();
+</script>
+</body>
+</html>
