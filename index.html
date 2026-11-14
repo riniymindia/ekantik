@@ -217,6 +217,9 @@ sup a { color: var(--mute); text-decoration: none; font-size: 12px; }
 .india__head h2 { font: 400 clamp(38px, 5vw, 64px)/1.04 var(--serif); }
 .india__head p { margin: 0; color: var(--mute); max-width: 36ch; }
 .facts { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+.facts--two { grid-template-columns: 1fr 1fr; margin-top: 48px; }
+.theft h2 { font: 400 clamp(38px, 5vw, 64px)/1.04 var(--serif); }
+.stat__num { overflow-wrap: anywhere; }
 .fact { padding: 32px 24px 0 0; display: grid; gap: 12px; align-content: start; min-width: 0; }
 .fact + .fact { padding-left: 24px; border-left: 1px solid var(--line); }
 .fact b { font: 400 clamp(52px, 6vw, 80px)/.95 var(--serif); font-weight: 400; color: var(--saffron); font-variant-numeric: tabular-nums; }
@@ -326,11 +329,14 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
   .order__view { position: relative; top: 0; }
   .facts { grid-template-columns: 1fr 1fr; row-gap: 32px; }
   .fact:nth-child(3) { padding-left: 0; border-left: 0; }
+  .facts--two { grid-template-columns: 1fr 1fr; }
+  .facts--two .fact:nth-child(3) { padding-left: 24px; border-left: 1px solid var(--line); }
 }
 @media (max-width: 560px) {
   .practices__grid { grid-template-columns: 1fr; }
   .practice + .practice { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
-  .facts { grid-template-columns: 1fr; row-gap: 0; }
+  .facts, .facts--two { grid-template-columns: 1fr; row-gap: 0; }
+  .facts--two .fact:nth-child(3) { padding-left: 0; border-left: 0; }
   .fact, .fact + .fact { padding: 24px 0; border-left: 0; }
   .fact + .fact { border-top: 1px solid var(--line); }
   .nav .chip { display: none; }
@@ -392,9 +398,19 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
 
 <section class="stat gutter">
   <div class="narrow">
-    <div class="stat__num r" id="statNum">186</div>
+    <div class="stat__num r" id="statNum">70&ndash;80</div>
     <p class="stat__unit r">times a day.</p>
-    <p class="r">That is how often the average American checks their phone.<sup><a href="#source-1" aria-label="Source">1</a></sup> Each check is a small leaving. Ekantik is something to reach for that brings you back instead.</p>
+    <p class="r">That is how often a typical Indian smartphone user picks up their phone.<sup><a href="#source-1" aria-label="Source 1">1</a></sup> Each pickup is a small leaving. Ekantik is something to reach for that brings you back instead.</p>
+  </div>
+</section>
+
+<section class="theft gutter" aria-labelledby="theftTitle">
+  <div class="wrap">
+    <h2 class="r" id="theftTitle">Every check takes more<br>than the minute it uses.</h2>
+    <div class="facts facts--two">
+      <div class="fact r"><b>1 in 2</b><p>pickups has no purpose. About half the time, Indian users reach for their phone without knowing why.<sup><a href="#source-1" aria-label="Source 1">1</a></sup></p></div>
+      <div class="fact r"><b>23 min</b><p>is how long it takes, on average, to get back to the task you were doing after an interruption.<sup><a href="#source-2" aria-label="Source 2">2</a></sup> Your focus is not spent in the check. It is stolen after it.</p></div>
+    </div>
   </div>
 </section>
 
@@ -532,10 +548,10 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
       <p class="r">India gave the world the quiet hour. Today most of us start the day somewhere else.</p>
     </div>
     <div class="facts">
-      <div class="fact r"><b>84%</b><p>of Indian smartphone users check their phone within fifteen minutes of waking up.<sup><a href="#source-2" aria-label="Source 2">2</a></sup></p></div>
-      <div class="fact r"><b>5 hrs</b><p>a day is how long the average Indian spends on a smartphone.<sup><a href="#source-3" aria-label="Source 3">3</a></sup></p></div>
-      <div class="fact r"><b>1 in 10</b><p>Indian adults lives with a mental health condition, and most never receive care.<sup><a href="#source-4" aria-label="Source 4">4</a></sup></p></div>
-      <div class="fact r"><b>6&times;</b><p>is how much India&rsquo;s electronics production grew in a decade. Ekantik is part of what it makes next.<sup><a href="#source-5" aria-label="Source 5">5</a></sup></p></div>
+      <div class="fact r"><b>84%</b><p>of Indian smartphone users check their phone within fifteen minutes of waking up.<sup><a href="#source-3" aria-label="Source 3">3</a></sup></p></div>
+      <div class="fact r"><b>5 hrs</b><p>a day is how long the average Indian spends on a smartphone.<sup><a href="#source-4" aria-label="Source 4">4</a></sup></p></div>
+      <div class="fact r"><b>1 in 10</b><p>Indian adults lives with a mental health condition, and most never receive care.<sup><a href="#source-5" aria-label="Source 5">5</a></sup></p></div>
+      <div class="fact r"><b>6&times;</b><p>is how much India&rsquo;s electronics production grew in a decade. Ekantik is part of what it makes next.<sup><a href="#source-6" aria-label="Source 6">6</a></sup></p></div>
     </div>
   </div>
 </section>
@@ -632,11 +648,12 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
       <a href="#hour">The hour</a><a href="#practices">Practices</a><a href="#order">Reserve</a><a href="#faq">Questions</a>
     </nav>
     <ol class="sources">
-      <li id="source-1">Reviews.org cell phone usage survey of U.S. adults, 2026.</li>
-      <li id="source-2">Boston Consulting Group study of Indian smartphone users, as reported by BOOM.</li>
-      <li id="source-3">EY report on India&rsquo;s media and entertainment sector, 2025, as reported by Bloomberg.</li>
-      <li id="source-4">National Mental Health Survey of India 2015&ndash;16, NIMHANS: 10.6% of adults; treatment gap of 70&ndash;92% by condition.</li>
-      <li id="source-5">Ministry of Electronics and IT: &#8377;1.9 lakh crore in 2014&ndash;15 to &#8377;11.3 lakh crore in 2024&ndash;25, as reported by The Tribune.</li>
+      <li id="source-1">Boston Consulting Group, 2024: a 30-day usage study of more than 1,100 Indian consumers found 70&ndash;80 pickups a day, and no clear intent in about half of them. As reported by Business Standard and The Tribune.</li>
+      <li id="source-2">Gloria Mark, University of California, Irvine: about 23 minutes 15 seconds, on average, to resume an interrupted task, from workplace field studies. Reported in Gallup.</li>
+      <li id="source-3">Boston Consulting Group study of Indian smartphone users, as reported by BOOM.</li>
+      <li id="source-4">EY report on India&rsquo;s media and entertainment sector, 2025, as reported by Bloomberg.</li>
+      <li id="source-5">National Mental Health Survey of India 2015&ndash;16, NIMHANS: 10.6% of adults; treatment gap of 70&ndash;92% by condition.</li>
+      <li id="source-6">Ministry of Electronics and IT: &#8377;1.9 lakh crore in 2014&ndash;15 to &#8377;11.3 lakh crore in 2024&ndash;25, as reported by The Tribune.</li>
     </ol>
     <p class="note">RINIYM &copy; 2026</p>
   </div>
@@ -704,7 +721,7 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
     const t0 = performance.now();
     const step = (t) => {
       const k = Math.min(1, (t - t0) / 1800);
-      num.textContent = Math.round(186 * (1 - Math.pow(1 - k, 3)));
+      num.textContent = k < 1 ? Math.round(70 * (1 - Math.pow(1 - k, 3))) : '70–80';
       if (k < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
