@@ -130,7 +130,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .menu-btn span + span { margin-top: 6px; }
 .menu-btn[aria-expanded="true"] span:first-child { transform: translateY(3.75px) rotate(45deg); }
 .menu-btn[aria-expanded="true"] span:last-child { transform: translateY(-3.75px) rotate(-45deg); }
-.menu { position: absolute; left: 0; right: 0; top: 100%; background: rgba(10, 9, 19, .97); border-bottom: 1px solid var(--line); padding: 8px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+.menu { position: absolute; left: 0; right: 0; top: 100%; height: calc(100svh - 64px); overflow-y: auto; background: var(--night); border-bottom: 1px solid var(--line); padding: 8px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
 .menu nav { display: grid; }
 .menu nav a { padding: 14px 0; border-bottom: 1px solid var(--line); text-decoration: none; font: 400 26px/1.2 var(--serif); }
 .menu .chip { margin-top: 20px; }
