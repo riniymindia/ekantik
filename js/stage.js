@@ -11,7 +11,9 @@
    capsule and 1mm band, the smoked lid and the live OLED.
    ============================================================ */
 
-import * as THREE from 'three';
+/* self-hosted, hash-checked against the npm release of three@0.169.0,
+   so no third-party server can change the code this page runs */
+import * as THREE from './vendor/three.module.min.js';
 import { buildAssembly } from './ekantik-parts.js';
 
 export const FINISHES = {
@@ -59,7 +61,9 @@ export function mountRing(host, opts = {}) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  /* three canvases share the GPU, so phones get a lower ceiling */
+  const small = matchMedia('(max-width: 900px)').matches;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, small ? 1.5 : 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.25;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -123,7 +127,7 @@ export function mountRing(host, opts = {}) {
   let baseYaw = yaw;
   const lean = { x: 0, y: 0 }, leanTarget = { x: 0, y: 0 };
   let dragging = false, lastX = 0, lastY = 0, idle = 0;
-  let visible = false, clockT = 0, raf = 0;
+  let visible = false, clockT = 0, raf = 0, screenT = -1, lastLit = null;
   const clock = new THREE.Clock();
   const v = new THREE.Vector3();
 
@@ -205,9 +209,15 @@ export function mountRing(host, opts = {}) {
     clockT += dt;
 
     place();
-    /* the screen wakes once the lid is down */
-    screen.paint(t > 0.9 && look === 'real' ? clockT : 0);
-    tex.needsUpdate = true;
+    /* the screen wakes once the lid is down. It is a 128x64 panel, so
+       12 updates a second is plenty; re-uploading it every frame on
+       three canvases was most of the GPU work on a phone */
+    const lit = t > 0.9 && look === 'real';
+    if (lit !== lastLit || (lit && clockT - screenT > 1 / 12)) {
+      screen.paint(lit ? clockT : 0);
+      tex.needsUpdate = true;
+      screenT = clockT; lastLit = lit;
+    }
 
     if (!dragging) idle += dt;
     /* the hero sways so the screen always stays readable; the
