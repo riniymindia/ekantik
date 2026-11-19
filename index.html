@@ -240,7 +240,10 @@ sup a { color: var(--mute); text-decoration: none; font-size: 12px; }
 .buy h2 { font: 400 clamp(48px, 6vw, 76px)/.95 var(--serif); }
 .price { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
 .price b { font: 400 40px/1 var(--serif); font-weight: 400; font-variant-numeric: tabular-nums; }
-.price span { color: var(--mute); font-size: 14px; }
+.price s { font: 400 24px/1 var(--serif); color: var(--mute); text-decoration-thickness: 1px; font-variant-numeric: tabular-nums; }
+.price .save { font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; font-style: normal; color: var(--on-saffron); background: var(--saffron); padding: 7px 10px; border-radius: 99px; align-self: center; }
+.earlybird { font: 500 11px/1.4 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--saffron); margin: 0 0 -14px !important; }
+.price-note { color: var(--mute); font-size: 14px; margin: -14px 0 0 !important; }
 .buy p.intro { color: var(--soft); }
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 legend { padding: 0; margin-bottom: 12px; }
@@ -390,7 +393,7 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
       <h1>Come back<br>to the <em>one.</em></h1>
       <p class="lede">A ring that keeps your practice and asks nothing of you. Count your japa, hold a sit, follow your breath. The world can wait a few minutes.</p>
       <div class="hero__cta">
-        <a class="btn btn--solid" href="#order">Reserve yours <small data-price>&#8377;4,999</small></a>
+        <a class="btn btn--solid" href="#order">Reserve yours <small data-price>&#8377;1,999</small></a>
         <a class="btn btn--ghost" href="#breathe">Take one breath</a>
       </div>
       <p class="hero__note">Pay nothing today. No app, no account.</p>
@@ -579,7 +582,9 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
     <form class="buy" id="buy" novalidate>
       <p class="label">First edition</p>
       <h2>Ekantik</h2>
-      <div class="price"><b data-price>&#8377;4,999</b><span>Pay nothing today</span></div>
+      <p class="earlybird">Early bird price</p>
+      <div class="price"><b data-price>&#8377;1,999</b><s data-mrp>&#8377;5,999</s><em class="save" data-save>Save &#8377;4,000</em></div>
+      <p class="price-note">Pay nothing today. The early bird price is for the first edition only; Ekantik will be &#8377;5,999 after.</p>
       <p class="intro">The ring, ready for japa, dhyan, pranayam and smaran from the first touch. Charges over USB-C. Needs no phone.</p>
 
       <fieldset>
@@ -617,7 +622,7 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
         </div>
       </div>
 
-      <div class="total"><span class="label">Total</span><b id="total">&#8377;4,999</b></div>
+      <div class="total"><span class="label">Total</span><b id="total">&#8377;1,999</b></div>
       <button class="btn btn--solid" type="submit">Reserve yours</button>
       <ul class="promises">
         <li>Pay nothing today. We write to you before anything is charged.</li>
@@ -647,7 +652,7 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
     <svg class="signature" viewBox="630 575 335 375" role="img" aria-label="RINIYM"><use href="#rm-mark-g"/><use href="#rm-word-g"/></svg>
     <p class="label signature__cap r">Designed and made in India</p>
     <h2 class="r">The quiet hour<br>is <em>waiting.</em></h2>
-    <a class="btn btn--solid r" href="#order">Reserve yours <small data-price>&#8377;4,999</small></a>
+    <a class="btn btn--solid r" href="#order">Reserve yours <small data-price>&#8377;1,999</small></a>
   </div>
 </section>
 
@@ -715,9 +720,12 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
 (() => {
   document.documentElement.classList.add('js');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const PRICE = 4999;   /* rupees; change here and every price on the page follows */
+  const MRP = 5999;     /* full price, rupees */
+  const PRICE = 1999;   /* early bird price; change here and every price on the page follows */
   const rupees = (n) => '₹' + n.toLocaleString('en-IN');
   document.querySelectorAll('[data-price]').forEach((el) => { el.textContent = rupees(PRICE); });
+  document.querySelectorAll('[data-mrp]').forEach((el) => { el.textContent = rupees(MRP); });
+  document.querySelectorAll('[data-save]').forEach((el) => { el.textContent = 'Save ' + rupees(MRP - PRICE); });
 
   /* ---- reveals: dim to full as each line arrives ---- */
   const io = new IntersectionObserver((es) => es.forEach((e) => {
@@ -889,6 +897,7 @@ dialog::backdrop { background: rgba(4, 3, 9, .72); backdrop-filter: blur(4px); }
       row('Size', o.size),
       row('Quantity', String(o.qty)),
       due,
+      row('Early bird saving', '−' + rupees((MRP - PRICE) * o.qty)),
       row('Due when it ships', rupees(o.total))
     );
   }
